@@ -4,6 +4,7 @@
   "main": "index.js",
   "license": "MIT",
   "scripts": {
-    "dev": "go run cmd/auto-mapper/main.go"
+    "dev": "go run cmd/auto-mapper/main.go",
+    "build": "go build cmd/auto-mapper/main.go"
   }
 }
