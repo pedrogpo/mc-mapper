@@ -1,1 +1,6 @@
 /main.exe
+/main
+/out/classes.txt
+/out/fields.txt
+/out/methods.txt
+.DS_STORE
