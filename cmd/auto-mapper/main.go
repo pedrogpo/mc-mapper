@@ -82,9 +82,9 @@ func mapForVersion(minecraftVersion string) {
 
 	for scanner.Scan() {
 		line := scanner.Text()
-		// pool.AddTask(func() {
-		handleJoinedType(line, fieldsCsv, methodsCsv, minecraftVersion)
-		// })
+		pool.AddTask(func() {
+			handleJoinedType(line, fieldsCsv, methodsCsv, minecraftVersion)
+		})
 	}
 
 	pool.Wait()
