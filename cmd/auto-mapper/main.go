@@ -138,7 +138,7 @@ func main() {
 	builder.CreateClassesFile(allMappings)
 
 	// create out/fields.txt
-	builder.CreateFieldsFile(allMappings)
+	builder.CreateFieldsFile(&allMappings)
 
 	// para o timer
 	fim := time.Now()

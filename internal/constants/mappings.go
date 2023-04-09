@@ -91,6 +91,7 @@ func (m *Mappings) AddField(clsName string, fieldName string, obfName string, sr
 					Name:    obfName,
 				},
 			},
+			// that's the try list
 			SrgMappings: []VersionMap{
 				{
 					Version: minecraftVersion,

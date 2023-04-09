@@ -12,6 +12,17 @@ func Filter[T any](s []T, f func(T) bool) []T {
 	return r
 }
 
+func Find[
+	T any,
+](s []T, f func(T) bool) *T {
+	for _, v := range s {
+		if f(v) {
+			return &v
+		}
+	}
+	return nil
+}
+
 func ForEach[T any](s []T, f func(T)) {
 	for _, v := range s {
 		f(v)
