@@ -1,0 +1,9 @@
+{
+  "name": "mc-auto-mapper",
+  "version": "1.0.0",
+  "main": "index.js",
+  "license": "MIT",
+  "scripts": {
+    "dev": "go run cmd/auto-mapper/main.go"
+  }
+}
