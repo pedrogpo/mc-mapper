@@ -8,7 +8,7 @@ func GetReturnTypeForSDK(returnType string) (string, bool) {
 	if strings.Contains(returnType, "/") && strings.Contains(returnType, "minecraft") {
 		returnType = strings.ReplaceAll(returnType, "/", "::")
 		returnType = returnType[1 : len(returnType)-1]
-		returnType = "std::shared_ptr<sdk::" + returnType + ">"
+		returnType = "sdk::" + returnType
 		isSDKType = true
 	} else if len(returnType) > 1 && returnType[0] == '[' {
 		// Handle array types

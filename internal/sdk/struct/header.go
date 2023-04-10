@@ -16,10 +16,48 @@ func GenerateHeaderContent(clsPath string, allMappings constants.Mappings, inclu
 	clsPathParts := strings.Split(clsPath, "/")
 	clsName := clsPathParts[len(clsPathParts)-1]
 
+	methods := ``
+	imports := ``
+
+	returnTypesToImport := []string{}
+
+	for methodName, methodMap := range constants.GetMethodsToMapInClass(allMappings, clsName) {
+		withoutDuplicatedSigs := sdkutils.RemoveDuplicateSigs(methodMap)
+
+		// imports
+		for _, sig := range withoutDuplicatedSigs {
+			returnType, isSDKType := sdkutils.GetReturnTypeForSDK(sig.ReturnType)
+			pathToImport := strings.ReplaceAll(returnType, "::", "/")
+
+			if isSDKType {
+				valueAlreadyInList := false
+				for _, existingValue := range returnTypesToImport {
+					if existingValue == pathToImport {
+						valueAlreadyInList = true
+						break
+					}
+				}
+				if !valueAlreadyInList {
+					returnTypesToImport = append(returnTypesToImport, pathToImport)
+				}
+			}
+		}
+
+		methods += sdkutils.GenerateMethodDefinition(methodName, methodMap)
+	}
+
+	for _, returnType := range returnTypesToImport {
+		imports += `#include "` + returnType + `.hpp"
+`
+	}
+
 	// write content in .hpp file
 	hpp := `#pragma once
-#include "` + includesFile + `"	
-	`
+#include "` + includesFile + `"
+`
+
+	hpp += imports
+
 	namespace := "sdk::"
 	for i := 0; i < len(clsPathParts)-1; i++ {
 		namespace += clsPathParts[i] + "::"
@@ -42,12 +80,6 @@ namespace ` + namespace + ` {
 }
 
 `
-
-	methods := ``
-
-	for methodName, methodMap := range constants.GetMethodsToMapInClass(allMappings, clsName) {
-		methods += sdkutils.GenerateMethodFunction(methodName, methodMap)
-	}
 
 	hpp += methods
 
