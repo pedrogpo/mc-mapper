@@ -29,3 +29,10 @@ You can modify it to your use case
 ## License
 
 This project is licensed under the MIT License - see the [LICENSE.md](LICENSE.md) file for details.
+
+## TODO
+
+SDK Generation
+
+- Fix function overloading when the only difference is the return type.
+- Pass env on shared_ptr return types

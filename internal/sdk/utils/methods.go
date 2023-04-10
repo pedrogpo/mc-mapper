@@ -38,7 +38,7 @@ func GenerateMethodFunctionForCPPFile(returnType string, methodName string, isSD
 
 	if isSDKType {
 		return `const auto obj = this->env->CallObjectMethod(this->instance, g_mapper->methods["` + methodName + `"]` + params + `);
-	return std::make_shared<` + returnType + `>(obj)`
+	return std::make_shared<` + returnType + `>(obj);`
 	}
 
 	functionType := ""
@@ -131,10 +131,22 @@ func GenerateMethodContent(clsName string, methodName string, methodMap constant
 	for _, sig := range withoutDuplicatedSigs {
 		returnType, isSDKType := GetReturnTypeForSDK(sig.ReturnType)
 
+		objectNameWithC := returnType
+
 		if isSDKType {
-			method += `std::shared_ptr<` + returnType + `> `
+			method += `std::shared_ptr<`
+
+			parts := strings.Split(returnType, "::")
+			parts[len(parts)-1] = "C" + parts[len(parts)-1]
+			objectNameWithC = strings.Join(parts, "::")
+
+			method += objectNameWithC
 		} else {
 			method += returnType + " "
+		}
+
+		if isSDKType {
+			method += `> `
 		}
 
 		method += namespace + "::C" + clsName + "::" + methodName + `(`
@@ -147,7 +159,7 @@ func GenerateMethodContent(clsName string, methodName string, methodMap constant
 
 		method = strings.TrimSuffix(method, ", ")
 
-		content := GenerateMethodFunctionForCPPFile(returnType, methodName, isSDKType, sig.Params)
+		content := GenerateMethodFunctionForCPPFile(objectNameWithC, methodName, isSDKType, sig.Params)
 
 		method += `) {
 	` + content + `
