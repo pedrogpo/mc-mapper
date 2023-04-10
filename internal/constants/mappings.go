@@ -7,16 +7,16 @@ type VersionMap struct {
 	Name    string
 }
 
-type Map struct {
-	Name        string
-	ObfMappings []VersionMap
-	SrgMappings []VersionMap
-}
-
 type MethodsSig struct {
 	Version    string
 	Params     []string
 	ReturnType string
+}
+
+type Map struct {
+	Name        string
+	ObfMappings []VersionMap
+	SrgMappings []VersionMap
 }
 
 // TODO extends Map..
