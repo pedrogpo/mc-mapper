@@ -23,54 +23,85 @@ func ExtractParamsAndReturn(signature string) (params []string, returnType strin
 	return params, returnType
 }
 
+// Function to handle function types
+func GetJNIFunctionType(returnType string) string {
+	functionTypeMap := map[string]string{
+		"jboolean": "CallBooleanMethod",
+		"jbyte":    "CallByteMethod",
+		"jchar":    "CallCharMethod",
+		"jshort":   "CallShortMethod",
+		"jint":     "CallIntMethod",
+		"jlong":    "CallLongMethod",
+		"jfloat":   "CallFloatMethod",
+		"jdouble":  "CallDoubleMethod",
+		"void":     "CallVoidMethod",
+	}
+
+	functionType, ok := functionTypeMap[returnType]
+	if !ok {
+		functionType = "CallObjectMethod"
+	}
+
+	return functionType
+}
+
+// Function to handle array types
+func HandleJNIArrayType(returnType string) string {
+	switch returnType {
+	case "Z":
+		returnType = "jbooleanArray"
+	case "B":
+		returnType = "jbyteArray"
+	case "C":
+		returnType = "jcharArray"
+	case "S":
+		returnType = "jshortArray"
+	case "I":
+		returnType = "jintArray"
+	case "J":
+		returnType = "jlongArray"
+	case "F":
+		returnType = "jfloatArray"
+	case "D":
+		returnType = "jdoubleArray"
+	case "V":
+		returnType = "voidArray"
+	default:
+		returnType = "jobjectArray"
+	}
+	return returnType
+}
+
+// Function to handle non-array types
+func HandleJNINonArrayType(returnType string) string {
+	switch returnType {
+	case "Z":
+		returnType = "jboolean"
+	case "B":
+		returnType = "jbyte"
+	case "C":
+		returnType = "jchar"
+	case "S":
+		returnType = "jshort"
+	case "I":
+		returnType = "jint"
+	case "J":
+		returnType = "jlong"
+	case "F":
+		returnType = "jfloat"
+	case "D":
+		returnType = "jdouble"
+	case "V":
+		returnType = "void"
+	default:
+		returnType = "jobject"
+	}
+	return returnType
+}
+
 func GetJniTypeFromSignature(str string) string {
 	if len(str) > 1 && str[0] == '[' {
-		// Handle array types
-		switch str[1:] {
-		case "Z":
-			return "jbooleanArray"
-		case "B":
-			return "jbyteArray"
-		case "C":
-			return "jcharArray"
-		case "S":
-			return "jshortArray"
-		case "I":
-			return "jintArray"
-		case "J":
-			return "jlongArray"
-		case "F":
-			return "jfloatArray"
-		case "D":
-			return "jdoubleArray"
-		case "V":
-			return "voidArray"
-		default:
-			return "jobjectArray"
-		}
-	} else {
-		// Handle non-array types
-		switch str {
-		case "Z":
-			return "jboolean"
-		case "B":
-			return "jbyte"
-		case "C":
-			return "jchar"
-		case "S":
-			return "jshort"
-		case "I":
-			return "jint"
-		case "J":
-			return "jlong"
-		case "F":
-			return "jfloat"
-		case "D":
-			return "jdouble"
-		case "V":
-			return "void"
-		default:
-			return "jobject"
-		}
+		return HandleJNIArrayType(str)
 	}
+	return HandleJNINonArrayType(str)
 }

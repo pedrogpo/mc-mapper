@@ -21,54 +21,35 @@ func RemoveDuplicateSigs(methodMap constants.MethodMap) []constants.MethodsSig {
 		}
 	}
 
-	result := make([]constants.MethodsSig, 0, len(uniqueMethods))
+	result := make([]constants.MethodsSig, len(uniqueMethods))
+	i := 0
 	for _, sig := range uniqueMethods {
-		result = append(result, sig)
+		result[i] = sig
+		i++
 	}
 
 	return result
 }
 
 func GenerateMethodFunctionForCPPFile(returnType string, methodName string, isSDKType bool, paramList []string) string {
-	params := ""
+	var builder strings.Builder
 
 	for i := range paramList {
-		params += ", param" + strconv.Itoa(i)
+		builder.WriteString(", param")
+		builder.WriteString(strconv.Itoa(i))
 	}
+
+	params := builder.String()
 
 	if isSDKType {
 		return `const auto obj = this->env->CallObjectMethod(this->instance, g_mapper->methods["` + methodName + `"]` + params + `);
-	return std::make_shared<` + returnType + `>(obj)`
+	return std::make_shared<` + returnType + `>(obj);`
 	}
 
-	functionType := ""
+	functionType := java.GetJNIFunctionType(returnType)
 
 	if len(returnType) > 1 && returnType[0] == '[' {
 		functionType = "CallObjectMethod"
-	} else {
-		// Handle non-array types
-		switch returnType {
-		case "jboolean":
-			functionType = "CallBooleanMethod"
-		case "jbyte":
-			functionType = "CallByteMethod"
-		case "jchar":
-			functionType = "CallCharMethod"
-		case "jshort":
-			functionType = "CallShortMethod"
-		case "jint":
-			functionType = "CallIntMethod"
-		case "jlong":
-			functionType = "CallLongMethod"
-		case "jfloat":
-			functionType = "CallFloatMethod"
-		case "jdouble":
-			functionType = "CallDoubleMethod"
-		case "void":
-			functionType = "CallVoidMethod"
-		default:
-			functionType = "CallObjectMethod"
-		}
 	}
 
 	return `return this->env->` + functionType + `(this->instance, g_mapper->methods["` + methodName + `"]` + params + `);`
@@ -131,10 +112,22 @@ func GenerateMethodContent(clsName string, methodName string, methodMap constant
 	for _, sig := range withoutDuplicatedSigs {
 		returnType, isSDKType := GetReturnTypeForSDK(sig.ReturnType)
 
+		objectNameWithC := returnType
+
 		if isSDKType {
-			method += `std::shared_ptr<` + returnType + `> `
+			method += `std::shared_ptr<`
+
+			parts := strings.Split(returnType, "::")
+			parts[len(parts)-1] = "C" + parts[len(parts)-1]
+			objectNameWithC = strings.Join(parts, "::")
+
+			method += objectNameWithC
 		} else {
 			method += returnType + " "
+		}
+
+		if isSDKType {
+			method += `> `
 		}
 
 		method += namespace + "::C" + clsName + "::" + methodName + `(`
@@ -147,7 +140,7 @@ func GenerateMethodContent(clsName string, methodName string, methodMap constant
 
 		method = strings.TrimSuffix(method, ", ")
 
-		content := GenerateMethodFunctionForCPPFile(returnType, methodName, isSDKType, sig.Params)
+		content := GenerateMethodFunctionForCPPFile(objectNameWithC, methodName, isSDKType, sig.Params)
 
 		method += `) {
 	` + content + `

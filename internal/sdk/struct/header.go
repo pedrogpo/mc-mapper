@@ -31,6 +31,10 @@ func GenerateHeaderContent(clsPath string, allMappings constants.Mappings, inclu
 			returnType, isSDKType := sdkutils.GetReturnTypeForSDK(sig.ReturnType)
 			pathToImport := strings.ReplaceAll(returnType, "::", "/")
 
+			if strings.ReplaceAll(pathToImport, "sdk/", "") == strings.ReplaceAll(clsPath, "sdk/", "") {
+				continue
+			}
+
 			if isSDKType {
 				valueAlreadyInList := false
 				for _, existingValue := range returnTypesToImport {
