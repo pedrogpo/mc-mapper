@@ -10,7 +10,10 @@ import (
 
 func GenerateClassStruct(clsPath string, allMappings constants.Mappings) {
 	// Remove the file name from the path
-	path := "out/sdk/" + strings.Replace(clsPath, "net/", "", 1)
+	// path := "out/sdk/" + strings.Replace(clsPath, "net/", "", 1)
+
+	path := "out/sdk/" + clsPath
+
 	dir := path[:strings.LastIndex(path, "/")]
 
 	// check if path exists

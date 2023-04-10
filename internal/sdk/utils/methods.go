@@ -90,11 +90,26 @@ func GenerateMethodDefinition(methodName string, methodMap constants.MethodMap) 
 			}
 		}
 
-		returnType, _ := GetReturnTypeForSDK(sig.ReturnType)
+		returnType, isSDKType := GetReturnTypeForSDK(sig.ReturnType)
 
-		method += `std::shared_ptr<` + returnType + `> `
+		method += "		"
 
-		method += methodName + `(`
+		if isSDKType {
+			method += `std::shared_ptr<`
+
+			parts := strings.Split(returnType, "::")
+			parts[len(parts)-1] = "C" + parts[len(parts)-1]
+
+			method += strings.Join(parts, "::")
+		} else {
+			method += returnType
+		}
+
+		if isSDKType {
+			method += `>`
+		}
+
+		method += " " + methodName + `(`
 
 		for _, param := range sig.Params {
 			method += java.GetJniTypeFromSignature(param) + ", "
@@ -103,13 +118,12 @@ func GenerateMethodDefinition(methodName string, methodMap constants.MethodMap) 
 		method = strings.TrimSuffix(method, ", ")
 
 		method += `);
-	
 `
 	}
 	return method
 }
 
-func GenerateMethodContent(clsName string, methodName string, methodMap constants.MethodMap) string {
+func GenerateMethodContent(clsName string, methodName string, methodMap constants.MethodMap, namespace string) string {
 	method := ``
 
 	withoutDuplicatedSigs := RemoveDuplicateSigs(methodMap)
@@ -117,9 +131,13 @@ func GenerateMethodContent(clsName string, methodName string, methodMap constant
 	for _, sig := range withoutDuplicatedSigs {
 		returnType, isSDKType := GetReturnTypeForSDK(sig.ReturnType)
 
-		method += `std::shared_ptr<` + returnType + `> `
+		if isSDKType {
+			method += `std::shared_ptr<` + returnType + `> `
+		} else {
+			method += returnType + " "
+		}
 
-		method += clsName + "::" + methodName + `(`
+		method += namespace + "::C" + clsName + "::" + methodName + `(`
 
 		paramName := "param0"
 		for i, param := range sig.Params {

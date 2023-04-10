@@ -11,7 +11,9 @@ import (
 
 func GenerateHeaderContent(clsPath string, allMappings constants.Mappings, includesFile string) {
 	// Remove the file name from the path
-	path := "out/sdk/" + strings.Replace(clsPath, "net/", "", 1)
+	// path := "out/sdk/" + strings.Replace(clsPath, "net/", "", 1)
+
+	path := "out/sdk/" + clsPath
 
 	clsPathParts := strings.Split(clsPath, "/")
 	clsName := clsPathParts[len(clsPathParts)-1]
@@ -67,21 +69,22 @@ func GenerateHeaderContent(clsPath string, allMappings constants.Mappings, inclu
 
 	hpp += `
 namespace ` + namespace + ` {
-	class ` + clsName + ` {
+	class C` + clsName + ` {
 	private:
 		JNIEnv* env;
 		jobject instance;
 	public:
-		` + clsName + `(JNIEnv* env);
+		C` + clsName + `(JNIEnv* env);
+		C` + clsName + `(JNIEnv* env, jobject instance);
 		jobject getInstance() { return this->instance; }
 
-		~` + clsName + `();
-	};
-}
+		~C` + clsName + `();
 
 `
-
 	hpp += methods
+	hpp += `	};
+}
+`
 
 	err := ioutil.WriteFile(path+".hpp", []byte(hpp), 0644)
 
