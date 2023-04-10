@@ -1,32 +1,17 @@
-package java
+package sdkutils
 
-import (
-	"regexp"
-)
+import "strings"
 
-func ExtractParamsAndReturn(signature string) (params []string, returnType string) {
-	paramRegex := regexp.MustCompile(`\((.*?)\)(.+)`)
-	matches := paramRegex.FindStringSubmatch(signature)
-
-	if len(matches) == 3 {
-		paramsString := matches[1]
-		returnType = matches[2]
-
-		paramTypeRegex := regexp.MustCompile(`(?:\[(?:\[)*|)([ZBCSIJFD]|L[^;]+;)`)
-		paramMatches := paramTypeRegex.FindAllStringSubmatch(paramsString, -1)
-
-		for _, match := range paramMatches {
-			params = append(params, match[1])
-		}
+func GetReturnTypeForSDK(returnType string) string {
+	if strings.Contains(returnType, "/") && strings.Contains(returnType, "minecraft") {
+		returnType = strings.ReplaceAll(returnType, "/", "::")
+		returnType = returnType[1 : len(returnType)-1]
+		return "sdk::" + returnType
 	}
 
-	return params, returnType
-}
-
-func GetJniTypeFromSignature(str string) string {
-	if len(str) > 1 && str[0] == '[' {
+	if len(returnType) > 1 && returnType[0] == '[' {
 		// Handle array types
-		switch str[1:] {
+		switch returnType[1:] {
 		case "Z":
 			return "jbooleanArray"
 		case "B":
@@ -50,7 +35,7 @@ func GetJniTypeFromSignature(str string) string {
 		}
 	} else {
 		// Handle non-array types
-		switch str {
+		switch returnType {
 		case "Z":
 			return "jboolean"
 		case "B":

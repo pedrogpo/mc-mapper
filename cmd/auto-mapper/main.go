@@ -10,8 +10,10 @@ import (
 
 	"github.com/pedrogpo/mc-auto-mapper/internal/builder"
 	"github.com/pedrogpo/mc-auto-mapper/internal/constants"
+	"github.com/pedrogpo/mc-auto-mapper/internal/sdk"
 	csvutil "github.com/pedrogpo/mc-auto-mapper/internal/utils/csv"
 	"github.com/pedrogpo/mc-auto-mapper/internal/utils/generics"
+	"github.com/pedrogpo/mc-auto-mapper/internal/utils/java"
 	_ "github.com/pedrogpo/mc-auto-mapper/internal/utils/java"
 	"github.com/pedrogpo/mc-auto-mapper/internal/utils/joined"
 	"github.com/pedrogpo/mc-auto-mapper/internal/utils/threadpool"
@@ -57,7 +59,26 @@ func handleJoinedType(line string, fieldsCsv *csvutil.CSV, methodsCsv *csvutil.C
 
 		allMappings.AddField(clsFromName, fieldName, obfName, srgName, minecraftVersion)
 	case joined.METHOD:
-		// fmt.Println("METHOD")
+		obfSplitted := strings.Split(parts[1], "/")
+		obfName := obfSplitted[1]
+
+		srgSplitted := strings.Split(parts[3], "/")
+		clsFromName := srgSplitted[len(srgSplitted)-2]
+		srgName := srgSplitted[len(srgSplitted)-1]
+
+		signature := parts[4]
+
+		methodRow := methodsCsv.GetRowIdx(srgName)
+
+		if generics.IsOutOfBound(methodRow, 1) {
+			return
+		}
+
+		methodName := methodRow[1]
+
+		params, returnType := java.ExtractParamsAndReturn(signature)
+
+		allMappings.AddMethod(clsFromName, methodName, obfName, srgName, params, returnType, minecraftVersion)
 	}
 }
 
@@ -139,6 +160,9 @@ func main() {
 
 	// create out/fields.txt
 	builder.CreateFieldsFile(allMappings)
+
+	// init sdk generator
+	sdk.SDKInit(allMappings)
 
 	// para o timer
 	fim := time.Now()
