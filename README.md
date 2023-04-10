@@ -37,3 +37,4 @@ SDK Generation
 - Fix function overloading when the only difference is the return type.
 - Pass env on shared_ptr return types
 - Load mappings on each class instead using a global mapping manager - aka g_mapper
+- A way to get the return type of Fields, or just get it by inference
