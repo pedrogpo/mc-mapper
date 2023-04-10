@@ -10,7 +10,7 @@ import (
 	"github.com/pedrogpo/mc-auto-mapper/internal/utils/java"
 )
 
-func removeDuplicateMethods(methodMap constants.MethodMap) []constants.MethodsSig {
+func RemoveDuplicateSigs(methodMap constants.MethodMap) []constants.MethodsSig {
 	uniqueMethods := make(map[string]constants.MethodsSig)
 
 	for _, sig := range methodMap.MethodsSig {
@@ -74,12 +74,12 @@ func GenerateMethodFunctionForCPPFile(returnType string, methodName string, isSD
 	return `return this->env->` + functionType + `(this->instance, g_mapper->methods["` + methodName + `"]` + params + `);`
 }
 
-func GenerateMethodFunction(methodName string, methodMap constants.MethodMap) string {
+func GenerateMethodDefinition(methodName string, methodMap constants.MethodMap) string {
 	method := ``
 
-	withoutDuplicated := removeDuplicateMethods(methodMap)
+	withoutDuplicatedSigs := RemoveDuplicateSigs(methodMap)
 
-	for _, sig := range withoutDuplicated {
+	for _, sig := range withoutDuplicatedSigs {
 
 		// SDK Problem - TODO: it should not be there btw
 		returnTypeSplitted := strings.Split(sig.ReturnType, "/")
@@ -92,7 +92,7 @@ func GenerateMethodFunction(methodName string, methodMap constants.MethodMap) st
 
 		returnType, _ := GetReturnTypeForSDK(sig.ReturnType)
 
-		method += returnType + ` `
+		method += `std::shared_ptr<` + returnType + `> `
 
 		method += methodName + `(`
 
@@ -112,12 +112,12 @@ func GenerateMethodFunction(methodName string, methodMap constants.MethodMap) st
 func GenerateMethodContent(clsName string, methodName string, methodMap constants.MethodMap) string {
 	method := ``
 
-	withoutDuplicated := removeDuplicateMethods(methodMap)
+	withoutDuplicatedSigs := RemoveDuplicateSigs(methodMap)
 
-	for _, sig := range withoutDuplicated {
+	for _, sig := range withoutDuplicatedSigs {
 		returnType, isSDKType := GetReturnTypeForSDK(sig.ReturnType)
 
-		method += returnType + ` `
+		method += `std::shared_ptr<` + returnType + `> `
 
 		method += clsName + "::" + methodName + `(`
 
