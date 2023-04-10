@@ -11,7 +11,9 @@ import (
 
 func GenerateCppContent(clsPath string, allMappings constants.Mappings) {
 	// Remove the file name from the path
-	path := "out/sdk/" + strings.Replace(clsPath, "net/", "", 1)
+	// path := "out/sdk/" + strings.Replace(clsPath, "net/", "", 1)
+
+	path := "out/sdk/" + clsPath
 
 	clsPathParts := strings.Split(clsPath, "/")
 	clsName := clsPathParts[len(clsPathParts)-1]
@@ -28,15 +30,15 @@ func GenerateCppContent(clsPath string, allMappings constants.Mappings) {
 
 	namespace = strings.TrimSuffix(namespace, "::")
 
-	cpp += namespace + `::` + clsName + `(JNIEnv* env) {
+	cpp += namespace + `::C` + clsName + `::C` + clsName + `(JNIEnv* env) {
 	this->env = env;
 }
 
-` + namespace + `::` + clsName + `(JNIEnv* env, jobject instance) : instance(instance) {
+` + namespace + `::C` + clsName + `::C` + clsName + `(JNIEnv* env, jobject instance) : instance(instance) {
 	this->env = env;
 }
 
-` + namespace + `::~` + clsName + `() {
+` + namespace + `::C` + clsName + `::~C` + clsName + `() {
 	this->env->DeleteLocalRef(this->instance);
 }
 
@@ -45,7 +47,7 @@ func GenerateCppContent(clsPath string, allMappings constants.Mappings) {
 	methods := ``
 
 	for methodName, methodMap := range constants.GetMethodsToMapInClass(allMappings, clsName) {
-		methods += sdkutils.GenerateMethodContent(clsName, methodName, methodMap)
+		methods += sdkutils.GenerateMethodContent(clsName, methodName, methodMap, namespace)
 	}
 
 	cpp += methods
