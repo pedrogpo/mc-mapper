@@ -6,6 +6,7 @@ import (
 	"strings"
 
 	"github.com/pedrogpo/mc-auto-mapper/internal/constants"
+	sdkutils "github.com/pedrogpo/mc-auto-mapper/internal/sdk/utils"
 )
 
 func GenerateCppContent(clsPath string, allMappings constants.Mappings) {
@@ -40,6 +41,14 @@ func GenerateCppContent(clsPath string, allMappings constants.Mappings) {
 }
 
 `
+
+	methods := ``
+
+	for methodName, methodMap := range constants.GetMethodsToMapInClass(allMappings, clsName) {
+		methods += sdkutils.GenerateMethodContent(clsName, methodName, methodMap)
+	}
+
+	cpp += methods
 
 	err := ioutil.WriteFile(path+".cpp", []byte(cpp), 0644)
 

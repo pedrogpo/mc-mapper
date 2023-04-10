@@ -2,60 +2,62 @@ package sdkutils
 
 import "strings"
 
-func GetReturnTypeForSDK(returnType string) string {
+func GetReturnTypeForSDK(returnType string) (string, bool) {
+	isSDKType := false
+
 	if strings.Contains(returnType, "/") && strings.Contains(returnType, "minecraft") {
 		returnType = strings.ReplaceAll(returnType, "/", "::")
 		returnType = returnType[1 : len(returnType)-1]
-		return "sdk::" + returnType
-	}
-
-	if len(returnType) > 1 && returnType[0] == '[' {
+		returnType = "std::shared_ptr<sdk::" + returnType + ">"
+		isSDKType = true
+	} else if len(returnType) > 1 && returnType[0] == '[' {
 		// Handle array types
 		switch returnType[1:] {
 		case "Z":
-			return "jbooleanArray"
+			returnType = "jbooleanArray"
 		case "B":
-			return "jbyteArray"
+			returnType = "jbyteArray"
 		case "C":
-			return "jcharArray"
+			returnType = "jcharArray"
 		case "S":
-			return "jshortArray"
+			returnType = "jshortArray"
 		case "I":
-			return "jintArray"
+			returnType = "jintArray"
 		case "J":
-			return "jlongArray"
+			returnType = "jlongArray"
 		case "F":
-			return "jfloatArray"
+			returnType = "jfloatArray"
 		case "D":
-			return "jdoubleArray"
+			returnType = "jdoubleArray"
 		case "V":
-			return "voidArray"
+			returnType = "voidArray"
 		default:
-			return "jobjectArray"
+			returnType = "jobjectArray"
 		}
 	} else {
 		// Handle non-array types
 		switch returnType {
 		case "Z":
-			return "jboolean"
+			returnType = "jboolean"
 		case "B":
-			return "jbyte"
+			returnType = "jbyte"
 		case "C":
-			return "jchar"
+			returnType = "jchar"
 		case "S":
-			return "jshort"
+			returnType = "jshort"
 		case "I":
-			return "jint"
+			returnType = "jint"
 		case "J":
-			return "jlong"
+			returnType = "jlong"
 		case "F":
-			return "jfloat"
+			returnType = "jfloat"
 		case "D":
-			return "jdouble"
+			returnType = "jdouble"
 		case "V":
-			return "void"
+			returnType = "void"
 		default:
-			return "jobject"
+			returnType = "jobject"
 		}
 	}
+	return returnType, isSDKType
 }
