@@ -59,8 +59,6 @@ func CreateClassesFile(allMappings constants.Mappings) {
 		fmt.Println(err)
 		return
 	}
-
-	fmt.Println("Classes file created")
 }
 
 func CreateFieldsFile(allMappings constants.Mappings) {
@@ -119,6 +117,4 @@ func CreateFieldsFile(allMappings constants.Mappings) {
 		fmt.Println(err)
 		return
 	}
-
-	fmt.Println("Fields file created")
 }

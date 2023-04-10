@@ -6,7 +6,6 @@ import (
 	"os"
 	"strings"
 	"sync"
-	"time"
 
 	"github.com/pedrogpo/mc-auto-mapper/internal/builder"
 	"github.com/pedrogpo/mc-auto-mapper/internal/constants"
@@ -83,6 +82,8 @@ func handleJoinedType(line string, fieldsCsv *csvutil.CSV, methodsCsv *csvutil.C
 }
 
 func mapForVersion(minecraftVersion string) {
+	fmt.Printf("[DEBUG] -> Mapping to current directory: %s\n", minecraftVersion)
+
 	joinedFile, err1 := os.Open(rootPath + minecraftVersion + "/joined.srg")
 	fieldsCsv, err2 := csvutil.NewCSV(rootPath + minecraftVersion + "/fields.csv")
 	methodsCsv, err3 := csvutil.NewCSV(rootPath + minecraftVersion + "/methods.csv")
@@ -91,6 +92,7 @@ func mapForVersion(minecraftVersion string) {
 	defer fieldsCsv.Close()
 	defer methodsCsv.Close()
 
+	// that's not the best way to handle it, but we don't care so much about it
 	if err1 != nil || err2 != nil || err3 != nil {
 		fmt.Println("[ERR] It was not possible to read the current version: " + minecraftVersion)
 		return
@@ -116,10 +118,7 @@ func mapForVersion(minecraftVersion string) {
 }
 
 func main() {
-	// cria o timer
-	inicio := time.Now()
-
-	fmt.Println("Starting")
+	fmt.Println("[DEBUG] -> Starting")
 
 	file, err := os.Open(rootPath)
 	if err != nil {
@@ -141,19 +140,16 @@ func main() {
 			continue
 		}
 
-		versionName := entry.Name()
-		fmt.Printf("Mapping to current directory: %s\n", versionName)
+		minecraftVersion := entry.Name()
 
 		wg.Add(1)
 		go func() {
 			defer wg.Done()
-			mapForVersion(versionName)
+			mapForVersion(minecraftVersion)
 		}()
 	}
 
 	wg.Wait()
-
-	fmt.Println("Finished")
 
 	// create out/classes.txt
 	builder.CreateClassesFile(allMappings)
@@ -163,14 +159,4 @@ func main() {
 
 	// init sdk generator
 	sdk.SDKInit(allMappings)
-
-	// para o timer
-	fim := time.Now()
-
-	// calcula o tempo decorrido em segundos
-	tempoDecorrido := fim.Sub(inicio).Seconds()
-
-	fmt.Printf("Tempo decorrido: %.2f segundos\n", tempoDecorrido)
-
-	fmt.Scanln()
 }

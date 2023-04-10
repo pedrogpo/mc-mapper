@@ -11,7 +11,7 @@ import (
 var includesFile string = "includes.hpp"
 
 func SDKInit(allMappings constants.Mappings) {
-	fmt.Println("SDK Init")
+	fmt.Println("[DEBUG] -> SDK Builder Initialized")
 
 	// create directories
 	for clsName, clsMap := range allMappings.Classes {
@@ -27,5 +27,4 @@ func SDKInit(allMappings constants.Mappings) {
 	}
 
 	println("[DEBUG] -> SDK Directories sucessfully created.")
-
 }

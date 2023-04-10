@@ -37,6 +37,8 @@ var classesMutex sync.Mutex
 var fieldsMutex sync.Mutex
 var methodsMutex sync.Mutex
 
+// TODO: create a addMapping function to repetitive functions
+
 func (m *Mappings) AddClass(clsName string, obfName string, clsPath string, minecraftVersion string) {
 	classesMutex.Lock()
 	if _, ok := m.Classes[clsName]; !ok {
