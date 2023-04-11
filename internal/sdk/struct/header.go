@@ -76,7 +76,7 @@ namespace ` + namespace + ` {
 	class C` + clsName + ` {
 	private:
 		JNIEnv* env;
-		jobject instance;
+		jobject instance = nullptr;
 	public:
 		C` + clsName + `(JNIEnv* env);
 		C` + clsName + `(JNIEnv* env, jobject instance);

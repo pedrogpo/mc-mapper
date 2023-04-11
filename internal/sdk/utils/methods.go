@@ -31,7 +31,7 @@ func RemoveDuplicateSigs(methodMap constants.MethodMap) []constants.MethodsSig {
 	return result
 }
 
-func GenerateMethodFunctionForCPPFile(returnType string, methodName string, isSDKType bool, paramList []string) string {
+func GenerateMethodFunctionForCPPFile(returnType string, methodName string, isSDKType bool, paramList []string, clsName string) string {
 	var builder strings.Builder
 
 	for i := range paramList {
@@ -42,8 +42,8 @@ func GenerateMethodFunctionForCPPFile(returnType string, methodName string, isSD
 	params := builder.String()
 
 	if isSDKType {
-		return `const auto obj = this->env->CallObjectMethod(this->instance, g_mapper->methods["` + methodName + `"]` + params + `);
-	return std::make_shared<` + returnType + `>(obj);`
+		return `const auto obj = this->env->CallObjectMethod(this->instance, sdk::g_mapper->classes["` + clsName + `"]->methods["` + methodName + `"]` + params + `);
+	return std::make_shared<` + returnType + `>(this->env, obj);`
 	}
 
 	functionType := java.GetJNIFunctionType(returnType)
@@ -52,7 +52,7 @@ func GenerateMethodFunctionForCPPFile(returnType string, methodName string, isSD
 		functionType = "CallObjectMethod"
 	}
 
-	return `return this->env->` + functionType + `(this->instance, g_mapper->methods["` + methodName + `"]` + params + `);`
+	return `return this->env->` + functionType + `(this->instance, sdk::g_mapper->classes["` + clsName + `"]->methods["` + methodName + `"]` + params + `);`
 }
 
 func GenerateMethodDefinition(methodName string, methodMap constants.MethodMap) string {
@@ -140,7 +140,7 @@ func GenerateMethodContent(clsName string, methodName string, methodMap constant
 
 		method = strings.TrimSuffix(method, ", ")
 
-		content := GenerateMethodFunctionForCPPFile(objectNameWithC, methodName, isSDKType, sig.Params)
+		content := GenerateMethodFunctionForCPPFile(objectNameWithC, methodName, isSDKType, sig.Params, clsName)
 
 		method += `) {
 	` + content + `

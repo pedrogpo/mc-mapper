@@ -20,6 +20,7 @@ func GenerateCppContent(clsPath string, allMappings constants.Mappings) {
 
 	// write content in .cpp file
 	cpp := `#include "` + clsName + `.hpp"
+#include <sdk/mapper.hpp>
 
 `
 

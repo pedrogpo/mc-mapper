@@ -17,14 +17,15 @@ type VersionInfo struct {
 
 func CreateMethodsFile(allMappings constants.Mappings) {
 	mappingMethods := strings.Builder{}
+	mappingMethods.WriteString("const std::map<std::string, std::map<std::string, s_method>> mappings_methods = { \n")
 
 	for clsName, clsMap := range allMappings.Methods {
-
-		if _, ok := constants.MethodsToMap[clsName]; !ok {
+		if _, hasInMethodsToMap := constants.MethodsToMap[clsName]; !hasInMethodsToMap {
 			continue
 		}
 
-		mappingMethods.WriteString("{\"" + clsName + "\", \n	{ \n")
+		mappingMethods.WriteString(fmt.Sprintf("\t{\"%s\", { \n", clsName))
+
 		for methodName, methodMap := range clsMap {
 			find := generics.Find(constants.MethodsToMap[clsName], func(e string) bool {
 				found := false
@@ -50,16 +51,14 @@ func CreateMethodsFile(allMappings constants.Mappings) {
 				continue
 			}
 
-			mappingMethods.WriteString("		\"" + methodName + "\", { \n")
+			mappingMethods.WriteString(fmt.Sprintf("\t\t{\"%s\", { \n", methodName))
 
 			// parameters
-			mappingMethods.WriteString("		{")
+			mappingMethods.WriteString("\t\t\t{ \n")
 
-			grouped := make(map[string][]string)
+			groupedSigs := make(map[string][]string)
 
-			versionStr := ""
 			for _, sig := range methodMap.MethodsSig {
-				versionStr += "\"" + sig.Version + "\", "
 				sigStr := "("
 				for _, Param := range sig.Params {
 					sigStr += Param
@@ -67,27 +66,53 @@ func CreateMethodsFile(allMappings constants.Mappings) {
 				sigStr += ")"
 				sigStr += sig.ReturnType
 
-				grouped[sigStr] = append(grouped[sigStr], sig.Version)
+				groupedSigs[sigStr] = append(groupedSigs[sigStr], sig.Version)
 			}
 
-			for sig, versions := range grouped {
-				fmt.Println(methodName, sig, versions)
+			for sig, versions := range groupedSigs {
+				var versionStr string
+				for _, version := range versions {
+					versionStr += "\"" + version + "\","
+				}
+				versionStr = versionStr[:len(versionStr)-1]
+
+				mappingMethods.WriteString(fmt.Sprintf("\t\t\t\ts_try_method{\"%s\", {%s}}, \n", sig, versionStr))
 			}
 
-			mappingMethods.WriteString("		}")
+			mappingMethods.WriteString("\t\t\t}, \n")
+			mappingMethods.WriteString("\t\t\t{ \n")
 
-			for _, v := range methodMap.SrgMappings {
-				mappingMethods.WriteString("			{\"" + v.Version + "\",\"" + v.Name + "\"}, \n")
+			groupedSrgs := make(map[string][]string)
+
+			for _, srg := range methodMap.SrgMappings {
+				groupedSrgs[srg.Name] = append(groupedSrgs[srg.Name], srg.Version)
 			}
+
+			for srg, versions := range groupedSrgs {
+				var versionStr string
+				for _, version := range versions {
+					versionStr += "\"" + version + "\","
+				}
+				versionStr = versionStr[:len(versionStr)-1]
+				mappingMethods.WriteString(fmt.Sprintf("\t\t\t\ts_try_method{\"%s\", {%s}}, \n", srg, versionStr))
+			}
+
+			mappingMethods.WriteString("\t\t\t}, \n")
+
+			mappingMethods.WriteString("\t\t\t{ \n")
 
 			for _, v := range methodMap.ObfMappings {
-				mappingMethods.WriteString("			{\"" + v.Version + "\",\"" + v.Name + "\"}, \n")
+				mappingMethods.WriteString(fmt.Sprintf("\t\t\t\t{\"%s\",\"%s\"}, \n", v.Version, v.Name))
 			}
 
-			mappingMethods.WriteString("		}, \n")
+			mappingMethods.WriteString("\t\t\t}, \n")
+
+			mappingMethods.WriteString("\t\t}}, \n")
 		}
-		mappingMethods.WriteString("	} \n}, \n")
+		mappingMethods.WriteString("\t}}, \n")
 	}
+
+	mappingMethods.WriteString("};")
 
 	err := ioutil.WriteFile("out/methods.txt", []byte(mappingMethods.String()), 0644)
 
