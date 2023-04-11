@@ -157,6 +157,9 @@ func main() {
 	// create out/fields.txt
 	builder.CreateFieldsFile(allMappings)
 
+	// create out/methods.txt
+	builder.CreateMethodsFile(allMappings)
+
 	// init sdk generator
 	sdk.SDKInit(allMappings)
 }

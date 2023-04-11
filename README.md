@@ -40,3 +40,4 @@ SDK Generation
 - Pass env on constructor (shared_ptr return types)
 - Load mappings on each class instead using a global mapping manager - aka g_mapper
 - A way to get the return type of Fields, or just get it by inference
+- getClass should have the path in params
