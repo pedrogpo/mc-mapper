@@ -13,12 +13,12 @@ func CreateClassesFile(allMappings constants.Mappings) {
 	mappingsClasses := strings.Builder{}
 	mappingsClasses.WriteString("const std::map<const char*, s_class_info> mappings_classes = {")
 
-	for clsName, clsMap := range allMappings.Classes {
-		if !generics.Contains(constants.ClassesToMap, clsName) {
+	for _, clsMap := range allMappings.Classes {
+		if !generics.Contains(constants.ClassesToMap, clsMap.Name) {
 			continue
 		}
 
-		mappingsClasses.WriteString("{\"" + clsName + "\",")
+		mappingsClasses.WriteString("{\"" + clsMap.Name + "\",")
 		mappingsClasses.WriteString("{{")
 
 		tryList := strings.Builder{}

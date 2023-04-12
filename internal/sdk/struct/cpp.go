@@ -47,7 +47,7 @@ func GenerateCppContent(clsPath string, allMappings constants.Mappings) {
 
 	methods := ``
 
-	for methodName, methodMap := range constants.GetMethodsToMapInClass(allMappings, clsName) {
+	for methodName, methodMap := range constants.GetMethodsToMapInClass(allMappings, clsPath) {
 		methods += sdkutils.GenerateMethodContent(clsName, methodName, methodMap, namespace)
 	}
 

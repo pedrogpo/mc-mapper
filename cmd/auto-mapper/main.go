@@ -73,11 +73,14 @@ func handleJoinedType(line string, fieldsCsv *csvutil.CSV, methodsCsv *csvutil.C
 			return
 		}
 
+		clsFromPathSplitted := strings.Split(parts[3], "/")
+		clsFromPath := strings.Join(clsFromPathSplitted[:len(clsFromPathSplitted)-1], "/")
+
 		methodName := methodRow[1]
 
 		params, returnType := java.ExtractParamsAndReturn(signature)
 
-		allMappings.AddMethod(clsFromName, methodName, obfName, srgName, params, returnType, minecraftVersion)
+		allMappings.AddMethod(clsFromName, methodName, obfName, srgName, params, returnType, minecraftVersion, clsFromPath)
 	}
 }
 

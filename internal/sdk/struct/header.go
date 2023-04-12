@@ -23,9 +23,8 @@ func GenerateHeaderContent(clsPath string, allMappings constants.Mappings, inclu
 
 	returnTypesToImport := []string{}
 
-	for methodName, methodMap := range constants.GetMethodsToMapInClass(allMappings, clsName) {
+	for methodName, methodMap := range constants.GetMethodsToMapInClass(allMappings, clsPath) {
 		withoutDuplicatedSigs := sdkutils.RemoveDuplicateSigs(methodMap)
-
 		// imports
 		for _, sig := range withoutDuplicatedSigs {
 			returnType, isSDKType := sdkutils.GetReturnTypeForSDK(sig.ReturnType)

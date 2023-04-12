@@ -15,15 +15,13 @@ func SDKInit(allMappings constants.Mappings) {
 
 	// create directories
 	for clsName, clsMap := range allMappings.Classes {
-		if !generics.Contains(constants.ClassesToMap, clsName) {
+		if !generics.Contains(constants.ClassesToMap, clsMap.Name) {
 			continue
 		}
 
-		for _, value := range clsMap.SrgMappings {
-			sdkstruct.GenerateClassStruct(value.Name, allMappings)
-			sdkstruct.GenerateHeaderContent(value.Name, allMappings, includesFile)
-			sdkstruct.GenerateCppContent(value.Name, allMappings)
-		}
+		sdkstruct.GenerateClassStruct(clsName, allMappings)
+		sdkstruct.GenerateHeaderContent(clsName, allMappings, includesFile)
+		sdkstruct.GenerateCppContent(clsName, allMappings)
 	}
 
 	println("[DEBUG] -> SDK Directories sucessfully created.")

@@ -22,6 +22,7 @@ type Map struct {
 // TODO extends Map..
 type MethodMap struct {
 	Name        string
+	clsFromName string
 	MethodsSig  []MethodsSig
 	ObfMappings []VersionMap
 	SrgMappings []VersionMap
@@ -41,8 +42,8 @@ var methodsMutex sync.Mutex
 
 func (m *Mappings) AddClass(clsName string, obfName string, clsPath string, minecraftVersion string) {
 	classesMutex.Lock()
-	if _, ok := m.Classes[clsName]; !ok {
-		m.Classes[clsName] = Map{
+	if _, ok := m.Classes[clsPath]; !ok {
+		m.Classes[clsPath] = Map{
 			Name: clsName,
 			ObfMappings: []VersionMap{
 				{
@@ -58,19 +59,20 @@ func (m *Mappings) AddClass(clsName string, obfName string, clsPath string, mine
 			},
 		}
 	} else {
-		obfMappings := m.Classes[clsName].ObfMappings
+		obfMappings := m.Classes[clsPath].ObfMappings
 		obfMappings = append(obfMappings, VersionMap{
 			Version: minecraftVersion,
 			Name:    obfName,
 		})
 
-		srgMappings := m.Classes[clsName].SrgMappings
+		srgMappings := m.Classes[clsPath].SrgMappings
 		srgMappings = append(srgMappings, VersionMap{
 			Version: minecraftVersion,
 			Name:    clsPath,
 		})
 
-		m.Classes[clsName] = Map{
+		m.Classes[clsPath] = Map{
+			Name:        clsName,
 			ObfMappings: obfMappings,
 			SrgMappings: srgMappings,
 		}
@@ -122,15 +124,16 @@ func (m *Mappings) AddField(clsName string, fieldName string, obfName string, sr
 	fieldsMutex.Unlock()
 }
 
-func (m *Mappings) AddMethod(clsName string, methodName string, obfName string, srgName string, params []string, returnType string, minecraftVersion string) {
+func (m *Mappings) AddMethod(clsName string, methodName string, obfName string, srgName string, params []string, returnType string, minecraftVersion string, clsFromPath string) {
 	methodsMutex.Lock()
-	if _, ok := m.Methods[clsName]; !ok {
-		m.Methods[clsName] = make(map[string]MethodMap)
+	if _, ok := m.Methods[clsFromPath]; !ok {
+		m.Methods[clsFromPath] = make(map[string]MethodMap)
 	}
 
-	if _, ok := m.Methods[clsName][methodName]; !ok {
-		m.Methods[clsName][methodName] = MethodMap{
-			Name: methodName,
+	if _, ok := m.Methods[clsFromPath][methodName]; !ok {
+		m.Methods[clsFromPath][methodName] = MethodMap{
+			Name:        methodName,
+			clsFromName: clsName,
 			ObfMappings: []VersionMap{
 				{
 					Version: minecraftVersion,
@@ -152,26 +155,28 @@ func (m *Mappings) AddMethod(clsName string, methodName string, obfName string, 
 			},
 		}
 	} else {
-		obfMappings := m.Methods[clsName][methodName].ObfMappings
+		obfMappings := m.Methods[clsFromPath][methodName].ObfMappings
 		obfMappings = append(obfMappings, VersionMap{
 			Version: minecraftVersion,
 			Name:    obfName,
 		})
 
-		srgMappings := m.Methods[clsName][methodName].SrgMappings
+		srgMappings := m.Methods[clsFromPath][methodName].SrgMappings
 		srgMappings = append(srgMappings, VersionMap{
 			Version: minecraftVersion,
 			Name:    srgName,
 		})
 
-		methodsSig := m.Methods[clsName][methodName].MethodsSig
+		methodsSig := m.Methods[clsFromPath][methodName].MethodsSig
 		methodsSig = append(methodsSig, MethodsSig{
 			Version:    minecraftVersion,
 			Params:     params,
 			ReturnType: returnType,
 		})
 
-		m.Methods[clsName][methodName] = MethodMap{
+		m.Methods[clsFromPath][methodName] = MethodMap{
+			Name:        methodName,
+			clsFromName: clsName,
 			ObfMappings: obfMappings,
 			SrgMappings: srgMappings,
 			MethodsSig:  methodsSig,

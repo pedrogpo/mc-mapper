@@ -60,8 +60,8 @@ func GenerateMethodDefinition(methodName string, methodMap constants.MethodMap) 
 
 	withoutDuplicatedSigs := RemoveDuplicateSigs(methodMap)
 
+	mapDuplicated := make(map[string]int)
 	for _, sig := range withoutDuplicatedSigs {
-
 		// SDK Problem - TODO: it should not be there btw
 		returnTypeSplitted := strings.Split(sig.ReturnType, "/")
 		returnTypeCls := strings.ReplaceAll(returnTypeSplitted[len(returnTypeSplitted)-1], ";", "")
@@ -72,6 +72,16 @@ func GenerateMethodDefinition(methodName string, methodMap constants.MethodMap) 
 		}
 
 		returnType, isSDKType := GetReturnTypeForSDK(sig.ReturnType)
+
+		suffix := ""
+		key := methodName + strings.Join(generics.Map(sig.Params, java.GetJniTypeFromSignature), "")
+
+		if _, ok := mapDuplicated[key]; !ok {
+			mapDuplicated[key] = 0
+		} else {
+			mapDuplicated[key]++
+			suffix = strconv.Itoa(mapDuplicated[key])
+		}
 
 		method += "		"
 
@@ -90,7 +100,7 @@ func GenerateMethodDefinition(methodName string, methodMap constants.MethodMap) 
 			method += `>`
 		}
 
-		method += " " + methodName + `(`
+		method += " " + methodName + suffix + `(`
 
 		for _, param := range sig.Params {
 			method += java.GetJniTypeFromSignature(param) + ", "
@@ -109,10 +119,34 @@ func GenerateMethodContent(clsName string, methodName string, methodMap constant
 
 	withoutDuplicatedSigs := RemoveDuplicateSigs(methodMap)
 
+	mapDuplicated := make(map[string]int)
 	for _, sig := range withoutDuplicatedSigs {
 		returnType, isSDKType := GetReturnTypeForSDK(sig.ReturnType)
 
 		objectNameWithC := returnType
+
+		suffix := ""
+		key := methodName + strings.Join(generics.Map(sig.Params, java.GetJniTypeFromSignature), "")
+
+		if _, ok := mapDuplicated[key]; !ok {
+			mapDuplicated[key] = 0
+		} else {
+			mapDuplicated[key]++
+			suffix = strconv.Itoa(mapDuplicated[key])
+		}
+
+		// generate doc
+		if len(sig.Params) > 0 {
+			comment := "/** \n"
+			paramNameForComment := ""
+			for i, param := range sig.Params {
+				paramNameForComment = "param" + strconv.Itoa(i)
+				comment += "* @param " + paramNameForComment + " " + param
+			}
+			comment += "\n*/\n"
+
+			method += comment
+		}
 
 		if isSDKType {
 			method += `std::shared_ptr<`
@@ -130,7 +164,7 @@ func GenerateMethodContent(clsName string, methodName string, methodMap constant
 			method += `> `
 		}
 
-		method += namespace + "::C" + clsName + "::" + methodName + `(`
+		method += namespace + "::C" + clsName + "::" + methodName + suffix + `(`
 
 		paramName := "param0"
 		for i, param := range sig.Params {

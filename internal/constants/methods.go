@@ -103,7 +103,7 @@ func GetMethodsToMapInClass(mappings Mappings, className string) map[string]Meth
 		}
 
 		for methodName, methodMap := range clsMap {
-			find := generics.Find(MethodsToMap[clsName], func(e string) bool {
+			find := generics.Find(MethodsToMap[methodMap.clsFromName], func(e string) bool {
 				found := false
 				for _, v := range methodMap.SrgMappings {
 					if v.Name == e {

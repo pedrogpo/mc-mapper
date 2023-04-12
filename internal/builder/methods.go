@@ -6,7 +6,6 @@ import (
 	"strings"
 
 	"github.com/pedrogpo/mc-auto-mapper/internal/constants"
-	"github.com/pedrogpo/mc-auto-mapper/internal/utils/generics"
 )
 
 type VersionInfo struct {
@@ -19,37 +18,17 @@ func CreateMethodsFile(allMappings constants.Mappings) {
 	mappingMethods := strings.Builder{}
 	mappingMethods.WriteString("const std::map<std::string, std::map<std::string, s_method>> mappings_methods = { \n")
 
-	for clsName, clsMap := range allMappings.Methods {
-		if _, hasInMethodsToMap := constants.MethodsToMap[clsName]; !hasInMethodsToMap {
+	for clsName := range allMappings.Methods {
+
+		lastNameSplitted := strings.Split(clsName, "/")
+		lastName := lastNameSplitted[len(lastNameSplitted)-1]
+
+		if _, hasInMethodsToMap := constants.MethodsToMap[lastName]; !hasInMethodsToMap {
 			continue
 		}
-
 		mappingMethods.WriteString(fmt.Sprintf("\t{\"%s\", { \n", clsName))
 
-		for methodName, methodMap := range clsMap {
-			find := generics.Find(constants.MethodsToMap[clsName], func(e string) bool {
-				found := false
-				for _, v := range methodMap.SrgMappings {
-					if v.Name == e {
-						found = true
-					}
-				}
-
-				for _, v := range methodMap.ObfMappings {
-					if v.Name == e {
-						found = true
-					}
-				}
-
-				if e == methodName {
-					found = true
-				}
-				return found
-			})
-
-			if find == nil {
-				continue
-			}
+		for methodName, methodMap := range constants.GetMethodsToMapInClass(allMappings, clsName) {
 
 			mappingMethods.WriteString(fmt.Sprintf("\t\t{\"%s\", { \n", methodName))
 
